@@ -147,6 +147,5 @@ async function getProfile(req, res) {
     `SELECT * FROM user_customisation WHERE user_id = $1`,
     [id]
   );
-  console.log(profile);
   res.json({ response: "user found", user: profile.rows[0] });
 }
