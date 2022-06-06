@@ -56,6 +56,10 @@ app.patch("/profile/picture", async (req, res) => {
   await updateProfilePicture(req, res);
 });
 
+app.get("/profile", async (req, res) => {
+  await getProfile(req, res);
+});
+
 async function getUser(req, res) {
   const { username, password } = await req.query;
 
@@ -135,4 +139,13 @@ async function updateProfilePicture(req, res) {
     [profilePictureID, userID]
   );
   res.json({ response: "profile picture updated" });
+}
+
+async function getProfile(req, res) {
+  const { id } = await req.query;
+  const profile = await client.query(
+    `SELECT * FROM user_customisation WHERE user_id = $1`,
+    [id]
+  );
+  res.json({ response: "user found", user: profile.rows[0] });
 }
