@@ -5,6 +5,7 @@ const PORT = 8080;
 const { Client } = require("pg");
 const hasher = require("pbkdf2-password-hash");
 const cookieParser = require("cookie-parser");
+const crypto = require("crypto");
 
 const connectionString =
   "postgres://ibkwudpc:17jUoB8WcN7NdziBCuBPme5djoEVbdec@tyke.db.elephantsql.com/ibkwudpc";
@@ -148,4 +149,21 @@ async function getProfile(req, res) {
     [id]
   );
   res.json({ response: "user found", user: profile.rows[0] });
+}
+
+async function startSession(req, res) {
+  const { userID } = await req.body;
+  const sessionID = crypto.randomUUID();
+  await client.query(
+    "INSERT INTO sessions (uuid, created_at, user_id) VALUES ($1, NOW(), $2)",
+    [sessionID, userID]
+  );
+  res.cookie("sessionID", sessionID);
+  res.json({ response: "session started" });
+}
+
+async function endSession(req, res) {
+  const sessionID = req.cookies.sessionID;
+  await client.query(`DELETE FROM sessions WHERE uuid = $1`, [sessionID]);
+  res.json({ response: "session ended" });
 }
