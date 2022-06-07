@@ -1,11 +1,13 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
-const PORT = 8080;
 const { Client } = require("pg");
 const hasher = require("pbkdf2-password-hash");
 const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
+const dotenv = require("dotenv");
+dotenv.config();
+const PORT = 80;
 
 const connectionString =
   "postgres://ibkwudpc:17jUoB8WcN7NdziBCuBPme5djoEVbdec@tyke.db.elephantsql.com/ibkwudpc";
@@ -22,7 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.listen(PORT, function () {
-  console.log("CORS-enabled web server listening on port 8080");
+  console.log("CORS-enabled web server listening on port " + PORT);
 });
 ``;
 app.get("/login", async (req, res) => {
