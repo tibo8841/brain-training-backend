@@ -7,7 +7,7 @@ const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const dotenv = require("dotenv");
 dotenv.config();
-const PORT = 80;
+const PORT = 8080;
 
 const connectionString =
   "postgres://ibkwudpc:17jUoB8WcN7NdziBCuBPme5djoEVbdec@tyke.db.elephantsql.com/ibkwudpc";
