@@ -6,6 +6,7 @@ const { Server, Socket } = require("socket.io");
 app.use(cors());
 
 const server = http.createServer(app);
+const PORT = 3001;
 
 const io = new Server(server, {
   cors: {
@@ -27,10 +28,9 @@ io.on("connection", (socket) => {
   socket.on("send_message", (data) => {
     console.log(data);
     socket.broadcast.emit("receive_message", data);
-    //console.log(data, "receiving messages is also happening (backend)");
   });
+
   socket.on("send_score", (data) => {
-    console.log(data);
     socket.broadcast.emit("receive_score", data);
     console.log(data, "receiving messages is also happening (backend)");
   });
@@ -40,6 +40,6 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(3001, () => {
-  console.log("SERVER RUNNING");
+server.listen(PORT, () => {
+  console.log("SERVER RUNNING ON " + PORT);
 });
