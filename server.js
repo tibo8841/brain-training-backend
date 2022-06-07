@@ -9,13 +9,21 @@ const dotenv = require("dotenv");
 dotenv.config();
 const PORT = 8080;
 
+const corsSettings = {
+  origin: [
+    "http://localhost:3000",
+    "https://brain-training-website.sigmalabs.co.uk/",
+  ],
+  credentials: true,
+};
+
 const connectionString =
   "postgres://ibkwudpc:17jUoB8WcN7NdziBCuBPme5djoEVbdec@tyke.db.elephantsql.com/ibkwudpc";
 
 const client = new Client(connectionString);
 client.connect();
 
-app.use(cors());
+app.use(cors(corsSettings));
 
 app.use(express.json());
 
