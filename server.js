@@ -145,7 +145,7 @@ async function updateProfilePicture(req, res) {
 async function getProfile(req, res) {
   const { id } = await req.query;
   const profile = await client.query(
-    `SELECT * FROM user_customisation WHERE user_id = $1`,
+    `SELECT user_id,win_message,profile_picture_id,has_crown,username FROM user_customisation JOIN users ON users.id = user_customisation.user_id WHERE user_customisation.user_id = $1`,
     [id]
   );
   res.json({ response: "user found", user: profile.rows[0] });
