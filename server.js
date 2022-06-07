@@ -7,7 +7,7 @@ const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const dotenv = require("dotenv");
 dotenv.config();
-const PORT = 8080;
+let PORT = process.env.PORT || 8080;
 
 const corsSettings = {
   origin: [
