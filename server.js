@@ -14,6 +14,13 @@ const corsSettings = {
     "http://localhost:3000",
     "https://brain-training-website.sigmalabs.co.uk/",
   ],
+  allowedHeaders: [
+    "Authorization",
+    "Content-Type",
+    "Accept",
+    "Origin",
+    "User-Agent",
+  ],
   credentials: true,
 };
 
