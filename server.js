@@ -83,20 +83,28 @@ async function getUser(req, res) {
 async function registerUser(req, res) {
   const { username, password } = await req.body;
 
-  await client.query(
-    `INSERT INTO users (username,password,created_at) VALUES($1,$2,NOW())`,
-    [username, await hasher.hash(password)]
-  );
-  const newUser = await client.query(
+  const usernameCheck = await client.query(
     `SELECT * FROM users WHERE username = $1`,
     [username]
   );
-  await client.query(
-    `INSERT INTO user_customisation (user_id,win_message,profile_picture_id,has_crown) 
+  if (usernameCheck.rows.length != 0) {
+    res.json({ response: "username already exists" });
+  } else {
+    await client.query(
+      `INSERT INTO users (username,password,created_at) VALUES($1,$2,NOW())`,
+      [username, await hasher.hash(password)]
+    );
+    const newUser = await client.query(
+      `SELECT * FROM users WHERE username = $1`,
+      [username]
+    );
+    await client.query(
+      `INSERT INTO user_customisation (user_id,win_message,profile_picture_id,has_crown) 
     VALUES($1,'Not all dreamers are winners, but all winners are dreamers. Your dream is the key to your future',$2,FALSE)`,
-    [newUser.rows[0].id, Math.floor(Math.random() * 31) + 1]
-  );
-  res.json({ response: "added new user" });
+      [newUser.rows[0].id, Math.floor(Math.random() * 31) + 1]
+    );
+    res.json({ response: "added new user" });
+  }
 }
 
 async function getLeaderboard(req, res) {
