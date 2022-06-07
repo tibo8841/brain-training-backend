@@ -29,6 +29,11 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("receive_message", data);
     //console.log(data, "receiving messages is also happening (backend)");
   });
+  socket.on("send_score", (data) => {
+    console.log(data);
+    socket.broadcast.emit("receive_score", data);
+    console.log(data, "receiving messages is also happening (backend)");
+  });
 
   socket.on("disconnect", () => {
     console.log("User Disconnected", socket.id);
