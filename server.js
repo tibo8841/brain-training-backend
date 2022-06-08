@@ -13,7 +13,15 @@ const connectionString =
 const client = new Client(connectionString);
 client.connect();
 
-app.use(cors());
+const corsOptions = {
+  origin: [
+    "http://localhost:3000",
+    "https://brain-training-website.sigmalabs.co.uk",
+  ],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
@@ -178,6 +186,7 @@ async function startSession(req, res) {
     [sessionID, userID]
   );
   res.cookie("sessionID", sessionID);
+  console.log(req.cookies.sessionID);
   return res.json({ response: "session started" });
 }
 
@@ -189,7 +198,8 @@ async function endSession(req, res) {
 
 async function getLoggedInUser(req, res) {
   const sessionID = req.cookies.sessionID;
-  const user = getUserFromID(sessionID);
+  console.log(sessionID);
+  const user = await getUserFromID(sessionID);
   if (user.length > 0) {
     return res.json({ response: true });
   } else {
