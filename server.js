@@ -41,6 +41,10 @@ app.post("/register", async (req, res) => {
   await registerUser(req, res);
 });
 
+app.get("/sessions", async (req, res) => {
+  await getLoggedInUser(req, res);
+});
+
 app.post("/sessions", async (req, res) => {
   await startSession(req, res);
 });
@@ -124,39 +128,46 @@ async function getLeaderboard(req, res) {
 }
 
 async function postLeaderboard(req, res) {
-  const { userID, username, score } = await req.body;
+  const { username, score } = await req.body;
+  const sessionID = req.cookies.sessionID;
+  const user = await getUserFromID(sessionID);
   await client.query(
     `INSERT INTO leaderboard (user_id,username,score,achieved_at) VALUES($1,$2,$3,NOW())`,
-    [userID, username, score]
+    [user[0].id, username, score]
   );
   res.json({ response: "added to leaderboard" });
 }
 
 async function addWinMessage(req, res) {
-  const { userID, message } = await req.body;
+  const { message } = await req.body;
+  const sessionID = req.cookies.sessionID;
+  const user = await getUserFromID(sessionID);
   await client.query(
     `UPDATE user_customisation SET win_message = $1 WHERE user_id = $2`,
-    [message, userID]
+    [message, user[0].id]
   );
   res.json({ response: "win message updated" });
 }
 
 async function updateProfilePicture(req, res) {
-  const { userID, profilePictureID } = await req.body;
+  const { profilePictureID } = await req.body;
+  const sessionID = req.cookies.sessionID;
+  const user = await getUserFromID(sessionID);
   await client.query(
     `UPDATE user_customisation SET profile_picture_id = $1 WHERE user_id = $2`,
-    [profilePictureID, userID]
+    [profilePictureID, user[0].id]
   );
   res.json({ response: "profile picture updated" });
 }
 
 async function getProfile(req, res) {
-  const { id } = await req.query;
+  const sessionID = req.cookies.sessionID;
+  const user = await getUserFromID(sessionID);
   const profile = await client.query(
     `SELECT user_id,win_message,profile_picture_id,has_crown,username FROM user_customisation JOIN users ON users.id = user_customisation.user_id WHERE user_customisation.user_id = $1`,
-    [id]
+    [user[0].id]
   );
-  res.json({ response: "user found", user: profile.rows[0] });
+  return res.json({ response: "user found", user: profile.rows[0] });
 }
 
 async function startSession(req, res) {
@@ -167,11 +178,29 @@ async function startSession(req, res) {
     [sessionID, userID]
   );
   res.cookie("sessionID", sessionID);
-  res.json({ response: "session started" });
+  return res.json({ response: "session started" });
 }
 
 async function endSession(req, res) {
   const sessionID = req.cookies.sessionID;
   await client.query(`DELETE FROM sessions WHERE uuid = $1`, [sessionID]);
   res.json({ response: "session ended" });
+}
+
+async function getLoggedInUser(req, res) {
+  const sessionID = req.cookies.sessionID;
+  const user = getUserFromID(sessionID);
+  if (user.length > 0) {
+    return res.json({ response: true });
+  } else {
+    return res.json({ response: false });
+  }
+}
+
+async function getUserFromID(sessionID) {
+  const user = await client.query(
+    "SELECT * FROM users JOIN sessions ON users.id = sessions.user_id WHERE sessions.uuid = $1",
+    [sessionID]
+  );
+  return user.rows;
 }
