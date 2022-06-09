@@ -100,7 +100,7 @@ async function getUser(req, res) {
   if (result.rows.length === 0) {
     res.json({ response: "User not found" });
   } else {
-    const auth = hasher.compare(password, result.rows[0].password);
+    const auth = await hasher.compare(password, result.rows[0].password);
     if (!auth) {
       res.json({ response: "Incorrect Password" });
     } else {
@@ -231,3 +231,5 @@ async function getUserFromID(sessionID) {
   );
   return user.rows;
 }
+
+module.exports = app;
