@@ -6,6 +6,7 @@ const hasher = require("pbkdf2-password-hash");
 const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const dotenv = require("dotenv");
+const { response } = require("express");
 dotenv.config();
 let PORT = process.env.PORT || 8080;
 
@@ -30,15 +31,7 @@ const connectionString =
 const client = new Client(connectionString);
 client.connect();
 
-const corsOptions = {
-  origin: [
-    "http://localhost:3000",
-    "https://brain-training-website.sigmalabs.co.uk",
-  ],
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
+app.use(cors(corsSettings));
 
 app.use(express.json());
 
@@ -137,80 +130,99 @@ async function registerUser(req, res) {
 }
 
 async function getLeaderboard(req, res) {
-  const { id } = await req.query;
-  if (id) {
-    const userLeaderboard = await client.query(
-      `SELECT * FROM leaderboard WHERE user_id = $1 ORDER BY score DESC`,
-      [id]
-    );
-    res.json(userLeaderboard.rows);
-  } else {
+  try {
     const leaderboard = await client.query(
       `select * FROM leaderboard ORDER BY score DESC`
     );
     res.json(leaderboard.rows);
+  } catch (err) {
+    res.json(err);
   }
 }
 
 async function postLeaderboard(req, res) {
   const { username, score } = await req.body;
-  const sessionID = req.cookies.sessionID;
-  const user = await getUserFromID(sessionID);
-  await client.query(
-    `INSERT INTO leaderboard (user_id,username,score,achieved_at) VALUES($1,$2,$3,NOW())`,
-    [user[0].id, username, score]
-  );
-  res.json({ response: "added to leaderboard" });
+  if (username && score) {
+    const sessionID = req.cookies.sessionID;
+    const user = await getUserFromID(sessionID);
+    await client.query(
+      `INSERT INTO leaderboard (user_id,username,score,achieved_at) VALUES($1,$2,$3,NOW())`,
+      [user[0].id, username, score]
+    );
+    res.json({ response: "added to leaderboard" });
+  } else {
+    res.json({ response: "cannot add to leader" });
+  }
 }
 
 async function addWinMessage(req, res) {
   const { message } = await req.body;
-  const sessionID = req.cookies.sessionID;
-  const user = await getUserFromID(sessionID);
-  await client.query(
-    `UPDATE user_customisation SET win_message = $1 WHERE user_id = $2`,
-    [message, user[0].id]
-  );
-  res.json({ response: "win message updated" });
+  if (message) {
+    const sessionID = req.cookies.sessionID;
+    const user = await getUserFromID(sessionID);
+    await client.query(
+      `UPDATE user_customisation SET win_message = $1 WHERE user_id = $2`,
+      [message, user[0].id]
+    );
+    res.json({ response: "win message updated" });
+  } else {
+    res.json({ response: "message not updated" });
+  }
 }
 
 async function updateProfilePicture(req, res) {
   const { profilePictureID } = await req.body;
-  const sessionID = req.cookies.sessionID;
-  const user = await getUserFromID(sessionID);
-  await client.query(
-    `UPDATE user_customisation SET profile_picture_id = $1 WHERE user_id = $2`,
-    [profilePictureID, user[0].id]
-  );
-  res.json({ response: "profile picture updated" });
+  if (profilePictureID) {
+    const sessionID = req.cookies.sessionID;
+    const user = await getUserFromID(sessionID);
+    await client.query(
+      `UPDATE user_customisation SET profile_picture_id = $1 WHERE user_id = $2`,
+      [profilePictureID, user[0].id]
+    );
+    res.json({ response: "profile picture updated" });
+  } else {
+    res.json({ response: "profile picture not updated" });
+  }
 }
 
 async function getProfile(req, res) {
-  const sessionID = req.cookies.sessionID;
-  const user = await getUserFromID(sessionID);
-  const profile = await client.query(
-    `SELECT user_id,win_message,profile_picture_id,has_crown,username FROM user_customisation JOIN users ON users.id = user_customisation.user_id WHERE user_customisation.user_id = $1`,
-    [user[0].id]
-  );
-  return res.json({ response: "user found", user: profile.rows[0] });
+  try {
+    const sessionID = req.cookies.sessionID;
+    const user = await getUserFromID(sessionID);
+    const profile = await client.query(
+      `SELECT user_id,win_message,profile_picture_id,has_crown,username FROM user_customisation JOIN users ON users.id = user_customisation.user_id WHERE user_customisation.user_id = $1`,
+      [user[0].id]
+    );
+    return res.json({ response: "user found", user: profile.rows[0] });
+  } catch (err) {
+    res.json(err);
+  }
 }
 
 async function startSession(req, res) {
   const { userID } = await req.body;
-  const sessionID = crypto.randomUUID();
-  await client.query(
-    "INSERT INTO sessions (uuid, created_at, user_id) VALUES ($1, NOW(), $2)",
-    [sessionID, userID]
-  );
-  res.cookie("sessionID", sessionID);
-  console.log(req.cookies.sessionID);
-  return res.json({ response: "session started" });
+  if (userID) {
+    const sessionID = crypto.randomUUID();
+    await client.query(
+      "INSERT INTO sessions (uuid, created_at, user_id) VALUES ($1, NOW(), $2)",
+      [sessionID, userID]
+    );
+    res.cookie("sessionID", sessionID);
+    console.log(req.cookies.sessionID);
+    return res.json({ response: "session started" });
+  } else {
+    res.json({ response: "session not started" });
+  }
 }
 
 async function endSession(req, res) {
-  const sessionID = req.cookies.sessionID;
-  await client.query(`DELETE FROM sessions WHERE uuid = $1`, [sessionID]);
-  res.json({ response: "session ended" });
+  try {
+    const sessionID = req.cookies.sessionID;
+    await client.query(`DELETE FROM sessions WHERE uuid = $1`, [sessionID]);
+    res.json({ response: "session ended" });
+  } catch (err) {
+    res.json(err);
+  }
 }
 
 async function getLoggedInUser(req, res) {
