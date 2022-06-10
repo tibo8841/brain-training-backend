@@ -5,8 +5,17 @@
 - [Introduction](#introduction)
 - [Technologies](#technologies)
 - [Launch](#launch)
-- [Server Endpoints](#server-endpoints) -[Register User](#register-user) -[User Log-in](#user-log-in) -[Profile Customisation](#profile-customisation) -[Sessions](#sessions) -[Leader-boards](#leader-boards)
+- [Server Endpoints](#server-endpoints)
+  - [Register User](#register-user)
+  - [User Log-in](#user-log-in)
+  - [Profile Customisation](#profile-customisation)
+  - [Sessions](#sessions)
+  - [Leader-board](#leader-board)
 - [Database Schema](#database-schema)
+  - [Users](#users)
+  - [Sessions](#sessions-1)
+  - [User Customisation](#user-customisation)
+  - [Leader-board](#leader-board-1)
 - [Developers](#developers)
 
 ## Introduction
