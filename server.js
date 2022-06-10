@@ -125,7 +125,7 @@ async function registerUser(req, res) {
 async function getLeaderboard(req, res) {
   try {
     const leaderboard = await client.query(
-      `select * FROM leaderboard ORDER BY score DESC`
+      `select leaderboard.user_id, leaderboard.score, leaderboard.username, user_customisation.profile_picture_id FROM leaderboard JOIN user_customisation ON user_customisation.user_id = leaderboard.user_id ORDER BY score DESC`
     );
     res.json(leaderboard.rows);
   } catch (err) {
