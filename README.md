@@ -168,7 +168,7 @@ async function endSession(req, res) {
 
 ### Leader-boards
 
-Leader-boards can be
+Leader-boards can be loaded or posted to if the user is logged in.
 
 ```
 async function getLeaderboard(req, res) {
