@@ -13,7 +13,7 @@ let PORT = process.env.PORT || 8080;
 const corsSettings = {
   origin: [
     "http://localhost:3000",
-    "https://brain-training-website.sigmalabs.co.uk/",
+    "https://brain-training-website.sigmalabs.co.uk",
   ],
   credentials: true,
 };
